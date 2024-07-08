@@ -1,11 +1,18 @@
-# Query the most recent logoff event from the Event Log
-$lastLogoffEvent = Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4634} -MaxEvents 1 | Select-Object -Property TimeCreated, @{Name='User';Expression={$_.Properties[5].Value}}
+# Calculate the start date (1 month ago)
+$startDate = (Get-Date).AddMonths(-1)
 
-# Output the logoff event details
-if ($lastLogoffEvent) {
-    Write-Output "Last Logoff Event:"
-    Write-Output "Time: $($lastLogoffEvent.TimeCreated)"
-    Write-Output "User: $($lastLogoffEvent.User)"
+# Query for system sleep events (Event ID 42) in the System log for the last month
+$sleepEvents = Get-WinEvent -FilterHashtable @{LogName='System'; ID=42; StartTime=$startDate} | 
+    Select-Object -Property TimeCreated, @{Name='Message';Expression={$_.Message -split '\r\n' | Select-Object -First 1}}
+
+# Output the sleep events
+if ($sleepEvents) {
+    Write-Output "System Sleep Events in the Last Month:"
+    foreach ($event in $sleepEvents) {
+        Write-Output "Time: $($event.TimeCreated)"
+        Write-Output "Details: $($event.Message)"
+        Write-Output "-----------------------------"
+    }
 } else {
-    Write-Output "No logoff events found."
+    Write-Output "No system sleep events found in the last month."
 }

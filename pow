@@ -1,8 +1,8 @@
 # Calculate the start date (1 month ago)
 $startDate = (Get-Date).AddMonths(-1)
 
-# Query for system sleep events (Event ID 42) in the System log for the last month
-$sleepEvents = Get-WinEvent -FilterHashtable @{LogName='System'; ID=42; StartTime=$startDate} | 
+# Query for system sleep events (Event ID 1 or 1074) in the System log for the last month
+$sleepEvents = Get-WinEvent -FilterHashtable @{LogName='System'; ID=1,1074; StartTime=$startDate} | 
     Select-Object -Property TimeCreated, @{Name='Message';Expression={$_.Message -split '\r\n' | Select-Object -First 1}}
 
 # Output the sleep events
